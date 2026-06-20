@@ -1,5 +1,6 @@
 
 import uuid
+import pprint
 import sqlite3
 from typing import Any
 from pathlib import Path
@@ -22,6 +23,9 @@ class SQLiteReaderWriter():
     def _verbose_print(self, enabled: bool, message: str) -> None:
         if enabled:
             print(f"INFO :: {message}")
+
+    def __dict_stringify(self, dictionary: dict) -> str:
+        return ",".join(f"{key}={value}" for key, value in dictionary.items())
 
     def create_table(self, table_name: str, sql: str, verbose: bool) -> bool:
         self._verbose_print(verbose, f"Creating table {table_name} ... ")
@@ -101,11 +105,16 @@ class SQLiteReaderWriter():
                 latest = release.get('latest', {}) or {}
                 cprint(f"INFO :: codename is of type {str(type(release.get('codename')))}", "yellow")
                 cprint(f"INFO :: custom is of type {str(type(release.get('custom')))}", "yellow")
-                if 'dict' in str(type(release.custom)):
-                    if len(release.custom.keys()) == 0:
-                        release.custom = None
+                if 'dict' in str(type(release.get('custom'))):
+                    self._verbose_print(verbose, f"release attribute 'custom' is of type {str(type(release.get('custom')))}.")
+                    if len(release.get('custom').keys()) == 0:
+                        self._verbose_print(verbose, f"release attribute 'custom' has {len(release.get('custom').keys())} keys.  None-ifying.")
+                        release['custom'] = None
                     else:
-                        print(f"Got {len(release.get('custom').keys())}")
+                        print(f"release attribute 'custom' has {len(release.get('custom').keys())} keys.")
+                        release['custom'] = self.__dict_stringify(release.get('custom'))
+                # pp = pprint.PrettyPrinter(indent=4)
+                # pp.pprint(release)
                 self._sqlite_cursor.execute("""
                     INSERT INTO product_releases (
                     id, product_id, name, label, codename, custom, 
@@ -123,6 +132,9 @@ class SQLiteReaderWriter():
 
             self._sqlite_connection.commit()
             print("Product safely ingested into SQLite database.")
+        except sqlite3.IntegrityError as error:
+            self._sqlite_connection.rollback()
+            self._verbose_print(verbose, f"{error}")
         except sqlite3.Error as error:
             self._sqlite_connection.rollback()
             print(f"ERROR :: Database error: {error}")

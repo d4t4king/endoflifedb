@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# output data types
+.csv
+.db
+.sqlite
+.sqldb

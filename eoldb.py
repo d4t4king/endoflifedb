@@ -105,6 +105,7 @@ def save_product_data(database_file_path: Path, product_data: dict, verbose: boo
     sqlite_reader_writer.insert_product(product_data, verbose)
 
 def main() -> int:
+    # I guess python "sees" that I am conditionally assigning a value to API_URL and de-scopes it to a local variable.
     global API_URL
 
     pretty_printer = pprint.PrettyPrinter(indent=4)

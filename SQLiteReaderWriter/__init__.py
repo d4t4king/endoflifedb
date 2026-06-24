@@ -15,6 +15,11 @@ sqlite3.register_converter("BLOB", lambda b: uuid.UUID(bytes=b))
 class SQLiteReaderWriter():
 
     def __init__(self, database_path: str | Path, verbose: bool):
+        """
+        Instantiates the SqliteReaderWriter object.  Takes in the path to the sqlite database file and optionally a boolean indicating whether verbose output is enabled.
+        Creates the connection and cursor for the sqlite database as object elements.  Minimal object properties will also be populated. 
+        TODO: Add **kwargs?
+        """
         if 'str' in str(type(database_path)):
             database_path = Path(database_path)
         self.database_path = database_path
@@ -25,13 +30,22 @@ class SQLiteReaderWriter():
         self._verbose_print(verbose, f"Got cursor object: {self._sqlite_cursor}", 'no_color')
 
     def _verbose_print(self, enabled: bool, message: str, color: str) -> None:
+        """
+        Optionally prints based on verbose level (on|off).
+        """
         if enabled:
                 cprint(f"INFO :: {message}", color) # pyright: ignore[reportArgumentType]
 
     def __dict_stringify(self, dictionary: dict) -> str:
+        """
+        Turns a dictionary object into a string (for printing)
+        """
         return ",".join(f"{key}={value}" for key, value in dictionary.items())
 
     def create_table(self, table_name: str, sql: str, verbose: bool) -> bool:
+        """
+        Sets up all the tables in the sqlite database.
+        """
         self._verbose_print(verbose, f"Creating table {table_name} ... ", 'no_color')
         # create the table
         self._sqlite_cursor.execute(sql)
@@ -53,9 +67,19 @@ class SQLiteReaderWriter():
                 return False
         
     def get_product(self, product_name: str, verbose: bool =False):
+        """
+        Looks up a product by name.
+        TODO: Figure out how to match any *unique* product attribute.
+        """
         self._sqlite_cursor.execute("SELECT id FROM products WHERE name LIKE ?", (product_name,))
         result_id = self._sqlite_cursor.fetchone()
         return result_id
+
+    def compare_product_records(self, record_object_1, record_object_2, verbose: bool =False) -> bool:
+        return True
+    
+    def update_product(self, product_name: str, verbose: bool=False) -> None:
+        pass
 
     def insert_product(self, data: dict[Any, Any], verbose: bool) -> None:
         # connection/cursor should already be setup in the class.

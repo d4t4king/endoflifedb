@@ -124,7 +124,8 @@ def main() -> int:
         print("Preparing end of life data for CSV output.")
         output_file_path = resolve_output_file_path(arguments.output_file)
         for product in products:
-            print(f"Product is of type {str(type(product))}")
+            _verbose_print(arguments.verbose, f"Product is of type {str(type(product))}")
+            pretty_printer.pprint(product)
             break
     else:
         database_file_path = Path(arguments.database_path)

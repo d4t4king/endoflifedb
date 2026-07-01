@@ -29,6 +29,7 @@ def _parse_arguments() -> argparse.Namespace:
     verbose_quiet_debug.add_argument('-q', '--quiet', dest='quiet', action='store_true', help="Suppress all output except warnings and errors.")
     verbose_quiet_debug.add_argument('-D', '--debug', dest='debug', action='store_true', help="Output for debugging.")
     parser_obj.add_argument('--__API_URL', dest="api_url", help=argparse.SUPPRESS)
+    parser_obj.add_argument('--csv', action='store_true', help="Enables output to CSV.  This may occlude some of the raw data from endoflife.date.")
     parser_obj.add_argument('-o', '--output-file', dest='output_file', help="The path to the output file.  This may be a path to the sqlite database, if using sqlite.  Or it may be a CSV file, if writing to CSV.")
     parser_obj.add_argument('-t', '--timeout-seconds', default=DEFAULT_TIMEOUT_SECONDS, type=int, help="The number of seconds to wait for a response from the API_URL before quitting.")
     parser_obj.add_argument('-d', '--database-path', default='eol.date.db', help="The path to the sqlite database file.  Will be created if it doesn't exist.")
@@ -42,7 +43,7 @@ def _debug_print(enabled: bool, message: str) -> None:
     if enabled:
         print(f"DEBUG: {message}")
 
-def _resolve_output_file_path(provided_output_file: str | None) -> Path:
+def resolve_output_file_path(provided_output_file: str | None) -> Path:
     if provided_output_file:
         return Path(provided_output_file)
 
@@ -118,15 +119,19 @@ def main() -> int:
     if arguments.api_url:
         API_URL = arguments.api_url
 
-    database_file_path = Path(arguments.database_path)
-    table_setup(database_file_path, arguments.verbose)
-
     products = _download_products(arguments.timeout_seconds, arguments.verbose)
-    for product in products:
-        #pretty_printer.pprint(product)
-        save_product_data(database_file_path, product, arguments.verbose)
-
-    output_file_path = _resolve_output_file_path(arguments.output_file)                 # <-- This is really for the CSV output, which we aren't implementing yet.
+    if arguments.csv:
+        print("Preparing end of life data for CSV output.")
+        output_file_path = resolve_output_file_path(arguments.output_file)
+        for product in products:
+            print(f"Product is of type {str(type(product))}")
+            break
+    else:
+        database_file_path = Path(arguments.database_path)
+        table_setup(database_file_path, arguments.verbose)
+        for product in products:
+            #pretty_printer.pprint(product)
+            save_product_data(database_file_path, product, arguments.verbose)
 
     return 0
 

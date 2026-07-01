@@ -105,6 +105,25 @@ def save_product_data(database_file_path: Path, product_data: dict, verbose: boo
     sqlite_reader_writer = SQLiteReaderWriter.SQLiteReaderWriter(database_file_path, verbose)
     sqlite_reader_writer.insert_product(product_data, verbose)
 
+def format_csv_row_as_dict(product_data: dict, verbose: bool =False) -> dict:
+    csv_row = {}
+    for key in product_data.keys():
+        if 'identifiers' in key:
+            # skip for now
+            continue
+        elif key == 'labels':
+            csv_row['labels_discontinued'] = product_data[key]['discontinued']
+            csv_row['labels_eoas'] = product_data[key]['eoas']
+            csv_row['labels_eoes'] = product_data[key]['eoes']
+            csv_row['labels_eol'] = product_data[key]['eol']
+        elif key == 'links':
+            csv_row['links_html'] = product_data[key]['html']
+            csv_row['links_icon'] = product_data[key]['icon']
+            csv_row['links_releasePolicy'] = product_data[key]['releasePolicy']
+        else:
+            csv_row[key] = product_data[key]
+    return csv_row
+
 def main() -> int:
     # I guess python "sees" that I am conditionally assigning a value to API_URL and de-scopes it to a local variable.
     global API_URL
@@ -125,7 +144,9 @@ def main() -> int:
         output_file_path = resolve_output_file_path(arguments.output_file)
         for product in products:
             _verbose_print(arguments.verbose, f"Product is of type {str(type(product))}")
-            pretty_printer.pprint(product)
+            #pretty_printer.pprint(product)
+            row = format_csv_row_as_dict(product, arguments.verbose)
+            pretty_printer.pprint(row)
             break
     else:
         database_file_path = Path(arguments.database_path)

@@ -232,13 +232,12 @@ def main() -> int:
                             'release_latest_date', 'release_latest_link', 'release_latest_name', 'release_ltsFrom', 'release_isEoas', \
                             'release_eoasFrom', 'release_isEoes', 'release_eoesFrom', 'release_isDiscontinued', 'release_discontinuedFrom', \
                             'release_custom']
+        print(f"Got a total of {len(csv_output_rows)} product + release rows.")
         print(f"Writing CSV data to output file ({output_file_path})")
         with open(output_file_path, 'w') as out_file:
             writer = csv.DictWriter(out_file, fieldnames=csv_field_names)
             writer.writeheader()
             writer.writerows(csv_output_rows)
-            #for __row in csv_output_rows:
-
     else:
         # defaults to sqlite storage
         database_file_path = Path(arguments.database_path)

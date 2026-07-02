@@ -218,7 +218,7 @@ __marimo__/
 .streamlit/secrets.toml
 
 # output data types
-.csv
-.db
-.sqlite
-.sqldb
+*.csv
+*.db
+*.sqlite
+*.sqldb

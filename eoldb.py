@@ -35,6 +35,7 @@ def _parse_arguments() -> argparse.Namespace:
     parser_obj.add_argument('-o', '--output-file', dest='output_file', help="The path to the output file.  This may be a path to the sqlite database, if using sqlite.  Or it may be a CSV file, if writing to CSV.")
     parser_obj.add_argument('-t', '--timeout-seconds', default=DEFAULT_TIMEOUT_SECONDS, type=int, help="The number of seconds to wait for a response from the API_URL before quitting.")
     parser_obj.add_argument('-d', '--database-path', default='eol.date.db', help="The path to the sqlite database file.  Will be created if it doesn't exist.")
+    parser_obj.add_argument('--show-json', action='store_true', help='Dumps the raw JSON from the API and exits.')
     return parser_obj.parse_args()
 
 def _verbose_pretty_print(enabled: bool, data_object: object, indent: int =4) -> None:
@@ -87,7 +88,6 @@ Total elements in response: {json_response_dict['total']}""")
         cprint(len(json_response_dict['result']), "green")
     else:
         cprint(len(json_response_dict['result']), "yellow")
-    print()
     return json_response_dict['result']
 
 def table_setup(database_file_path: str | Path, verbose: bool) -> None:
@@ -164,6 +164,11 @@ def format_csv_row_as_dict(product_data: dict[str, Any], verbose: bool =False) -
         #     tags = "|".join(product_data[key])
         #     _verbose_print(verbose, f"Got {len(product_data['tags'])} tags for product {product_data['name']}: {tags}")
         #     product_data['tags'] = tags
+        elif key == 'versionCommand':
+            if product_data[key] is not None:
+                csv_row['versionCommand'] = product_data[key].replace('\n', "|")
+            else:
+                _verbose_print(verbose, "TThe versionCommand value was empty.")
         elif key == 'labels':
             csv_row['labels_discontinued'] = product_data[key]['discontinued']
             csv_row['labels_eoas'] = product_data[key]['eoas']
@@ -215,7 +220,11 @@ def main() -> int:
 
     products = _download_products(arguments.timeout_seconds, arguments.verbose, arguments.debug)
 
-    if arguments.csv:
+    if arguments.show_json:
+        print("Printing the raw JSON from the API.")
+        json_result = _download_products(arguments.timeout_seconds, arguments.verbose)
+        _verbose_pretty_print(True, json_result)
+    elif arguments.csv:
         print("Preparing end of life data for CSV output.")
         csv_output_rows = []
         output_file_path = resolve_output_file_path(arguments.output_file)

@@ -2,7 +2,7 @@
 
 class EndOfLifeProduct():
     """
-        Represents a product record from endoflife.date.  Can be direved from the sqlite database.
+        Represents a product record from endoflife.date.  Can be derived from the sqlite database.
     """
     def __init__(self, name: str, **data: dict):
         self.name = name

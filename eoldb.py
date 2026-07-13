@@ -23,6 +23,9 @@ DEFAULT_FILE_BASENAME = "eol_products"
 DEFAULT_FILE_EXTENSION = ".csv"
 
 def _parse_arguments() -> argparse.Namespace:
+    """
+    Parse and format the command line arguments.
+    """
     parser_obj = argparse.ArgumentParser(
         description="Download product date from endoflife.date and convert it into a different format."
     )
@@ -39,15 +42,24 @@ def _parse_arguments() -> argparse.Namespace:
     return parser_obj.parse_args()
 
 def _verbose_pretty_print(enabled: bool, data_object: object, indent: int =4) -> None:
+    """
+    Optionally prints based on verbosity.  If 'verbose' is enabled, "pretty print" the supplied data object.
+    """
     __pretty_printer = pprint.PrettyPrinter(indent=indent)
     if enabled:
         __pretty_printer.pprint(data_object)
 
 def _verbose_print(enabled: bool, message: str, end: str | None ="\n") -> None:
+    """
+    Optionally prints based on verbosity.
+    """
     if enabled:
         print(message, end=end)
 
 def _debug_print(enabled: bool, message: str) -> None:
+    """
+    Print only if debug is enabled from the command line.
+    """
     if enabled:
         print(f"DEBUG: {message}")
 
